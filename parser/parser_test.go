@@ -19,6 +19,17 @@ func TestParser_ParseQuery(t *testing.T) {
       s: `?node:ip:send(?srcIP,?destIP) and destIP in [203.0.113.12,192.168.1.100]`,
       out: `IDENT LOGICAL IDENT CONDITION IDENT`,
     },
+    // A more complete example
+    {
+      s: `
+ DBServerNode:myDB:openSession(_):?sessionID Within
+    DBServerNode:myDb:userAuthenticate:(?user) Precedes
+        DBServerNode:myDB:sqlQuery(sessionID):?resultData Precedes
+          ?egressNode:ip::send(?outData, 203.0.113.12)
+and resultData FlowsTo* outData
+      `,
+      out: `IDENT TEMPORAL IDENT TEMPORAL IDENT TEMPORAL IDENT LOGICAL IDENT FLOW IDENT`,
+    },
     // Errors
     {
       s: `and ?srcIP`,
