@@ -71,7 +71,7 @@ func (p *Parser) join() (string, error) {
   } else if p.buf.tok == gofelex.FLOW {
     out, err = p.flow()
   } else {
-    err = fmt.Errorf("found %q, expected join type")
+    err = fmt.Errorf("found %q, expected join type", p.buf.lit)
     return "", err
   }
 
