@@ -25,7 +25,7 @@ func TestParser_ParseQuery(t *testing.T) {
  DBServerNode:myDB:openSession(_):?sessionID Within
     DBServerNode:myDb:userAuthenticate:(?user) Precedes
         DBServerNode:myDB:sqlQuery(sessionID):?resultData Precedes
-          ?egressNode:ip::send(?outData, 203.0.113.12)
+          ?egressNode:ip::send(?outData,203.0.113.12)
 and resultData FlowsTo* outData
       `,
       out: `IDENT TEMPORAL IDENT TEMPORAL IDENT TEMPORAL IDENT LOGICAL IDENT FLOW IDENT`,
