@@ -25,42 +25,106 @@ func (p *Parser) Parse() (string, error) {
 }
 
 func (p *Parser) query() (string, error) {
-  var out string
+  var out, ret string
   var err error
 
+  err = nil
+
   if p.buf.tok == gofelex.IDENT {
-    p.scanIgnoreWhitespace()
     out, err = p.action()
   } else {
     err = fmt.Errorf("found %q, expected IDENT", p.buf.lit)
     return "", err
   }
 
-  return out, nil 
+  ret = out
+
+  if p.buf.tok != gofelex.EOF {
+    out, err = p.join()
+    ret = ret + " " + out
+  }
+
+  return ret, err 
 }
 
 func (p *Parser) action() (string, error) {
-  return "", nil
+  var out string
+  var err error
+
+  out = "IDENT"
+  err = nil
+
+  p.scanIgnoreWhitespace()
+  return out, err
 }
 
 func (p *Parser) join() (string, error) {
-  return "", nil
+  var ret, out string
+  var err error
+
+  if p.buf.tok == gofelex.LOGICAL {
+    out, err = p.logical()
+  } else if p.buf.tok == gofelex.TEMPORAL {
+    out, err = p.temporal()
+  } else if p.buf.tok == gofelex.CONDITION {
+    out, err = p.conditional()
+  } else if p.buf.tok == gofelex.FLOW {
+    out, err = p.flow()
+  } else {
+    err = fmt.Errorf("found %q, expected join type")
+    return "", err
+  }
+
+  ret = out
+  out, err = p.query()
+
+  ret = ret + " " + out
+
+  return ret, err
 }
 
 func (p *Parser) logical() (string, error) {
-  return "", nil
+  var out string
+  var err error
+
+  out = "LOGICAL"
+  err = nil
+
+  p.scanIgnoreWhitespace()
+  return out, err
 }
 
 func (p *Parser) temporal() (string, error) {
-  return "", nil
+  var out string
+  var err error
+
+  out = "TEMPORAL"
+  err = nil
+
+  p.scanIgnoreWhitespace()
+  return out, err
 }
 
 func (p *Parser) conditional() (string, error) {
-  return "", nil
+  var out string
+  var err error
+
+  out = "CONDITION"
+  err = nil
+
+  p.scanIgnoreWhitespace()
+  return out, err
 }
 
 func (p *Parser) flow() (string, error) {
-  return "", nil
+  var out string
+  var err error
+
+  out = "FLOW"
+  err = nil
+
+  p.scanIgnoreWhitespace()
+  return out, err
 }
 
 // Utility Functions
