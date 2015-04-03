@@ -22,7 +22,7 @@ func NewParser(r io.Reader) *Parser {
 }
 
 func (p *Parser) Parse() (string, error) {
-	ast := syntaxTree.New("root")
+	ast := syntaxTree.New(syntaxTree.SyntaxNode{TypeStr: "root"})
 
 	p.scanIgnoreWhitespace()
 	tree, err := p.query()
@@ -48,7 +48,6 @@ func (p *Parser) query() (*syntaxTree.SyntaxTree, error) {
 
 	if isJoin(p.buf.tok) {
 		out, err = p.join()
-		//ret = ret + " " + out
 		out.InsertChild(ret)
 		ret = out
 	}
@@ -63,7 +62,13 @@ func (p *Parser) action() (*syntaxTree.SyntaxTree, error) {
 	err = nil
 
 	if p.buf.tok == gofelex.IDENT {
-		ret = syntaxTree.New("IDENT")
+		node := syntaxTree.SyntaxNode{
+			NodeType: p.buf.tok,
+			Literal:  p.buf.lit,
+			TypeStr:  "IDENT",
+		}
+
+		ret = syntaxTree.New(node)
 	} else {
 
 		p.scanIgnoreWhitespace()
@@ -106,7 +111,12 @@ func (p *Parser) logical() (*syntaxTree.SyntaxTree, error) {
 	var out *syntaxTree.SyntaxTree
 	var err error
 
-	out = syntaxTree.New("LOGICAL")
+	node := syntaxTree.SyntaxNode{
+		NodeType: p.buf.tok,
+		Literal:  p.buf.lit,
+		TypeStr:  "LOGICAL",
+	}
+	out = syntaxTree.New(node)
 	err = nil
 
 	p.scanIgnoreWhitespace()
@@ -117,7 +127,12 @@ func (p *Parser) temporal() (*syntaxTree.SyntaxTree, error) {
 	var out *syntaxTree.SyntaxTree
 	var err error
 
-	out = syntaxTree.New("TEMPORAL")
+	node := syntaxTree.SyntaxNode{
+		NodeType: p.buf.tok,
+		Literal:  p.buf.lit,
+		TypeStr:  "TEMPORAL",
+	}
+	out = syntaxTree.New(node)
 	err = nil
 
 	p.scanIgnoreWhitespace()
@@ -128,7 +143,12 @@ func (p *Parser) conditional() (*syntaxTree.SyntaxTree, error) {
 	var out *syntaxTree.SyntaxTree
 	var err error
 
-	out = syntaxTree.New("CONDITION")
+	node := syntaxTree.SyntaxNode{
+		NodeType: p.buf.tok,
+		Literal:  p.buf.lit,
+		TypeStr:  "CONDITION",
+	}
+	out = syntaxTree.New(node)
 	err = nil
 
 	p.scanIgnoreWhitespace()
@@ -139,7 +159,12 @@ func (p *Parser) flow() (*syntaxTree.SyntaxTree, error) {
 	var out *syntaxTree.SyntaxTree
 	var err error
 
-	out = syntaxTree.New("FLOW")
+	node := syntaxTree.SyntaxNode{
+		NodeType: p.buf.tok,
+		Literal:  p.buf.lit,
+		TypeStr:  "FLOW",
+	}
+	out = syntaxTree.New(node)
 	err = nil
 
 	p.scanIgnoreWhitespace()
