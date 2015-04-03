@@ -17,29 +17,29 @@ func TestParser_ParseQuery(t *testing.T) {
 		// Simple pattern match
 		{
 			s:   `?node:ip:send(?srcIP,?destIP) and destIP in [203.0.113.12,192.168.1.100]`,
-			out: `IDENT LOGICAL IDENT CONDITION IDENT`,
+			out: `root ( LOGICAL ( IDENT CONDITION ( IDENT IDENT ) ) )`,
 		},
 		// A more complete example
 		{
 			s: `
-DBServerNode:myDB:openSession(_):?sessionID Within
-    DBServerNode:myDb:userAuthenticate:(?user) Precedes
+{DBServerNode:myDB:openSession(_):?sessionID Within
+    DBServerNode:myDb:userAuthenticate:(?user)} Precedes
         DBServerNode:myDB:sqlQuery(sessionID):?resultData Precedes
           ?egressNode:ip::send(?outData,203.0.113.12)
 and resultData FlowsTo* outData
       `,
-			out: `IDENT TEMPORAL IDENT TEMPORAL IDENT TEMPORAL IDENT LOGICAL IDENT FLOW IDENT`,
+			out: `root ( TEMPORAL ( TEMPORAL ( IDENT IDENT ) TEMPORAL ( IDENT LOGICAL ( IDENT FLOW ( IDENT IDENT ) ) ) ) )`,
 		},
 		// Errors
 		{
 			s:   `and ?srcIP`,
 			out: ``,
-			err: `found "and", expected IDENT`,
+			err: `found "and", expected IDENT or OPEN`,
 		},
 		{
 			s:   `?node:ip:send(?srcIP,?destIP) and in [203.0.113.12,192.168.1.100]`,
 			out: ``,
-			err: `found "in", expected IDENT`,
+			err: `found "in", expected IDENT or OPEN`,
 		},
 	}
 
@@ -59,4 +59,4 @@ func errstring(err error) string {
 		return err.Error()
 	}
 	return ""
-,
+}

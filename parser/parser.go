@@ -2,8 +2,10 @@ package parser
 
 import (
 	"fmt"
-	"github.com/bkidney/gofelex"
 	"io"
+
+	"github.com/bkidney/EQ2Dot/syntaxTree"
+	"github.com/bkidney/gofelex"
 )
 
 type Parser struct {
@@ -20,107 +22,124 @@ func NewParser(r io.Reader) *Parser {
 }
 
 func (p *Parser) Parse() (string, error) {
+	ast := syntaxTree.New("root")
+
 	p.scanIgnoreWhitespace()
-	return p.query()
+	tree, err := p.query()
+	ast.InsertChild(tree)
+
+	return ast.String(), err
 }
 
-func (p *Parser) query() (string, error) {
-	var out, ret string
+func (p *Parser) query() (*syntaxTree.SyntaxTree, error) {
+	var out, ret *syntaxTree.SyntaxTree
+	var err error
+
+	err = nil
+
+	if p.buf.tok == gofelex.IDENT || p.buf.tok == gofelex.OPEN {
+		out, err = p.action()
+	} else {
+		err = fmt.Errorf("found %q, expected IDENT or OPEN", p.buf.lit)
+		return nil, err
+	}
+
+	ret = out
+
+	if isJoin(p.buf.tok) {
+		out, err = p.join()
+		//ret = ret + " " + out
+		out.InsertChild(ret)
+		ret = out
+	}
+
+	return ret, err
+}
+
+func (p *Parser) action() (*syntaxTree.SyntaxTree, error) {
+	var ret *syntaxTree.SyntaxTree
 	var err error
 
 	err = nil
 
 	if p.buf.tok == gofelex.IDENT {
-		out, err = p.action()
+		ret = syntaxTree.New("IDENT")
 	} else {
-		err = fmt.Errorf("found %q, expected IDENT", p.buf.lit)
-		return "", err
+
+		p.scanIgnoreWhitespace()
+		ret, err = p.query()
+
+		if p.buf.tok != gofelex.CLOSE {
+			err = fmt.Errorf("found %q, expected CLOSE", p.buf.lit)
+		}
 	}
 
-	ret = out
-
-	if p.buf.tok != gofelex.EOF {
-		out, err = p.join()
-		ret = ret + " " + out
-	}
-
+	p.scanIgnoreWhitespace()
 	return ret, err
 }
 
-func (p *Parser) action() (string, error) {
-	var out string
-	var err error
-
-	out = "IDENT"
-	err = nil
-
-	p.scanIgnoreWhitespace()
-	return out, err
-}
-
-func (p *Parser) join() (string, error) {
-	var ret, out string
+func (p *Parser) join() (*syntaxTree.SyntaxTree, error) {
+	var ret, out *syntaxTree.SyntaxTree
 	var err error
 
 	if p.buf.tok == gofelex.LOGICAL {
-		out, err = p.logical()
+		ret, err = p.logical()
 	} else if p.buf.tok == gofelex.TEMPORAL {
-		out, err = p.temporal()
+		ret, err = p.temporal()
 	} else if p.buf.tok == gofelex.CONDITION {
-		out, err = p.conditional()
+		ret, err = p.conditional()
 	} else if p.buf.tok == gofelex.FLOW {
-		out, err = p.flow()
+		ret, err = p.flow()
 	} else {
 		err = fmt.Errorf("found %q, expected join type", p.buf.lit)
-		return "", err
+		return nil, err
 	}
 
-	ret = out
 	out, err = p.query()
 
-	ret = ret + " " + out
+	ret.InsertChild(out)
 
 	return ret, err
 }
 
-func (p *Parser) logical() (string, error) {
-	var out string
+func (p *Parser) logical() (*syntaxTree.SyntaxTree, error) {
+	var out *syntaxTree.SyntaxTree
 	var err error
 
-	out = "LOGICAL"
+	out = syntaxTree.New("LOGICAL")
 	err = nil
 
 	p.scanIgnoreWhitespace()
 	return out, err
 }
 
-func (p *Parser) temporal() (string, error) {
-	var out string
+func (p *Parser) temporal() (*syntaxTree.SyntaxTree, error) {
+	var out *syntaxTree.SyntaxTree
 	var err error
 
-	out = "TEMPORAL"
+	out = syntaxTree.New("TEMPORAL")
 	err = nil
 
 	p.scanIgnoreWhitespace()
 	return out, err
 }
 
-func (p *Parser) conditional() (string, error) {
-	var out string
+func (p *Parser) conditional() (*syntaxTree.SyntaxTree, error) {
+	var out *syntaxTree.SyntaxTree
 	var err error
 
-	out = "CONDITION"
+	out = syntaxTree.New("CONDITION")
 	err = nil
 
 	p.scanIgnoreWhitespace()
 	return out, err
 }
 
-func (p *Parser) flow() (string, error) {
-	var out string
+func (p *Parser) flow() (*syntaxTree.SyntaxTree, error) {
+	var out *syntaxTree.SyntaxTree
 	var err error
 
-	out = "FLOW"
+	out = syntaxTree.New("FLOW")
 	err = nil
 
 	p.scanIgnoreWhitespace()
@@ -128,6 +147,13 @@ func (p *Parser) flow() (string, error) {
 }
 
 // Utility Functions
+func isJoin(tok gofelex.Token) bool {
+	return tok == gofelex.LOGICAL ||
+		tok == gofelex.TEMPORAL ||
+		tok == gofelex.CONDITION ||
+		tok == gofelex.FLOW
+}
+
 func (p *Parser) scan() (tok gofelex.Token, lit string) {
 
 	// Return any token in the buffer
