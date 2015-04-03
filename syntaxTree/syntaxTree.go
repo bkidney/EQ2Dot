@@ -16,7 +16,6 @@ func New(node SyntaxNode) *SyntaxTree {
 }
 
 func (tree *SyntaxTree) InsertChild(child *SyntaxTree) {
-
 	if tree.child == nil {
 		tree.child = child
 	} else {
@@ -24,6 +23,14 @@ func (tree *SyntaxTree) InsertChild(child *SyntaxTree) {
 		tree.child = child
 		child.sibling = temp
 	}
+}
+
+func (tree *SyntaxTree) GetChild() *SyntaxTree {
+	return tree.child
+}
+
+func (tree *SyntaxTree) GetSibling() *SyntaxTree {
+	return tree.sibling
 }
 
 // Returns depth first walk of tree (node must implement String())
