@@ -47,8 +47,8 @@ and resultData FlowsTo* outData
 		out, err := parser.NewParser(strings.NewReader(tt.s)).Parse()
 		if !reflect.DeepEqual(tt.err, errstring(err)) {
 			t.Errorf("%d. %q: error mismatch:\n  exp=%s\n  got=%s\n\n", i, tt.s, tt.err, err)
-		} else if tt.err == "" && !reflect.DeepEqual(tt.out, out) {
-			t.Errorf("%d. %q\noutput mismatch:\n\nexp%#v\n\ngot=%#v\n\n", i, tt.s, tt.out, out)
+		} else if tt.err == "" && !reflect.DeepEqual(tt.out, (*out).String()) {
+			t.Errorf("%d. %q\noutput mismatch:\n\nexp=%#v\n\ngot=%#v\n\n", i, tt.s, tt.out, (*out).String())
 		}
 	}
 }

@@ -21,14 +21,14 @@ func NewParser(r io.Reader) *Parser {
 	return &Parser{s: gofelex.NewScanner(r)}
 }
 
-func (p *Parser) Parse() (string, error) {
+func (p *Parser) Parse() (*syntaxTree.SyntaxTree, error) {
 	ast := syntaxTree.New(syntaxTree.SyntaxNode{TypeStr: "root"})
 
 	p.scanIgnoreWhitespace()
 	tree, err := p.query()
 	ast.InsertChild(tree)
 
-	return ast.String(), err
+	return ast, err
 }
 
 func (p *Parser) query() (*syntaxTree.SyntaxTree, error) {
