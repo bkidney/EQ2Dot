@@ -33,6 +33,10 @@ func (tree *SyntaxTree) GetSibling() *SyntaxTree {
 	return tree.sibling
 }
 
+func (tree *SyntaxTree) GetNode() SyntaxNode {
+	return tree.node
+}
+
 // Returns depth first walk of tree (node must implement String())
 func (tree *SyntaxTree) String() (out string) {
 	out = tree.node.String()
