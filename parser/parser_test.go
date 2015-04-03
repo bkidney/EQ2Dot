@@ -30,6 +30,17 @@ and resultData FlowsTo* outData
       `,
 			out: `root ( TEMPORAL ( TEMPORAL ( IDENT IDENT ) TEMPORAL ( IDENT LOGICAL ( IDENT FLOW ( IDENT IDENT ) ) ) ) )`,
 		},
+		// A more complete example without grouping
+		{
+			s: `
+DBServerNode:myDB:openSession(_):?sessionID Within
+    DBServerNode:myDb:userAuthenticate:(?user) Precedes
+        DBServerNode:myDB:sqlQuery(sessionID):?resultData Precedes
+          ?egressNode:ip::send(?outData,203.0.113.12)
+and resultData FlowsTo* outData
+      `,
+			out: `root ( TEMPORAL ( IDENT TEMPORAL ( IDENT TEMPORAL ( IDENT LOGICAL ( IDENT FLOW ( IDENT IDENT ) ) ) ) ) )`,
+		},
 		// Errors
 		{
 			s:   `and ?srcIP`,
