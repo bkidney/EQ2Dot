@@ -20,12 +20,9 @@ func (tree *SyntaxTree) InsertChild(child *SyntaxTree) {
 	if tree.child == nil {
 		tree.child = child
 	} else {
-		youngest := tree.child
-
-		for youngest.sibling != nil {
-			youngest = (*youngest).sibling
-		}
-		(*youngest).sibling = child
+		temp := tree.child
+		tree.child = child
+		child.sibling = temp
 	}
 }
 

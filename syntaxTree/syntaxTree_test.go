@@ -35,7 +35,7 @@ func TestSyntaxTree_OneChild(t *testing.T) {
 func TestSyntaxTree_ChildAndSiblings(t *testing.T) {
 	var out string
 
-	expected := "root ( a b c )"
+	expected := "root ( c b a )"
 	tree := syntaxTree.New("root")
 
 	tree.InsertChild(syntaxTree.New("a"))
@@ -51,7 +51,7 @@ func TestSyntaxTree_ChildAndSiblings(t *testing.T) {
 func TestSyntaxTree_MultiLevelChildAndSiblings(t *testing.T) {
 	var out string
 
-	expected := "root ( a ( a1 a2 ) b c ( c1 c2 c3 ) )"
+	expected := "root ( c ( c3 c2 c1 ) b a ( a2 a1 ) )"
 	tree := syntaxTree.New("root")
 
 	aTree := syntaxTree.New("a")
