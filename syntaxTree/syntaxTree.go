@@ -1,12 +1,12 @@
 package syntaxTree
 
 type SyntaxTree struct {
-	node    string
+	node    SyntaxNode
 	sibling *SyntaxTree
 	child   *SyntaxTree
 }
 
-func New(node string) *SyntaxTree {
+func New(node SyntaxNode) *SyntaxTree {
 	tree := &SyntaxTree{}
 	tree.node = node
 	tree.sibling = nil
@@ -28,7 +28,7 @@ func (tree *SyntaxTree) InsertChild(child *SyntaxTree) {
 
 // Returns depth first walk of tree (node must implement String())
 func (tree *SyntaxTree) String() (out string) {
-	out = tree.node
+	out = tree.node.String()
 	if tree.child != nil {
 		out = out + " ( " + tree.child.String() + " )"
 	}
