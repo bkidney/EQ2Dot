@@ -69,8 +69,9 @@ func (translator *Translator) generateDot(ast *syntaxTree.SyntaxTree) string {
 		}
 
 	}
-	// startSubgraph(left, right)
+	// Logical connections
 	//  and is literal -> literal
+	//  or is parallel linking
 	if currNode.NodeType == gofelex.LOGICAL {
 		if currNode.Literal == "and" {
 			edge := ast.GetChild().GetNode().Literal
@@ -78,9 +79,16 @@ func (translator *Translator) generateDot(ast *syntaxTree.SyntaxTree) string {
 			next := translator.generateDot(ast.GetChild().GetSibling())
 
 			out = translator.createNode(edge, nodeNum) + next
+		} else {
+			edge := ast.GetChild().GetNode().Literal
+			lastNode := translator.getLastNode()
+
+			next := translator.generateDot(ast.GetChild().GetSibling())
+			siblingLastNode := translator.getLastNode()
+
+			out = translator.createNodeEx(edge, lastNode, siblingLastNode) + next
 		}
 	}
-	//  or is parallel linking
 	//  flow combines literals
 	if currNode.NodeType == gofelex.FLOW {
 		lhs := ast.GetChild().GetNode().Literal
