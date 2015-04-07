@@ -1,7 +1,6 @@
 package translator
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
