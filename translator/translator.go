@@ -38,7 +38,8 @@ func (translator *Translator) generatePreamble() string {
 }
 
 func (translator *Translator) generatePostamble() string {
-	return "}"
+	lastNode := translator.getLastNode()
+	return "\t" + strconv.Itoa(lastNode) + " [shape = doublecircle];\n}"
 }
 
 func (translator *Translator) generateDot(ast *syntaxTree.SyntaxTree) string {
@@ -58,14 +59,10 @@ func (translator *Translator) generateDot(ast *syntaxTree.SyntaxTree) string {
 
 			if lhs.GetNode().NodeType == gofelex.IDENT {
 				edge := ast.GetChild().GetNode().Literal
-				nodeNum := translator.getNodeNum()
+				nodeNum := translator.getNextNode()
 				next := translator.generateDot(ast.GetChild().GetSibling())
 
-				if next == "" {
-					out = translator.createFinalNode(edge, nodeNum)
-				} else {
-					out = translator.createNode(edge, nodeNum) + next
-				}
+				out = translator.createNode(edge, nodeNum) + next
 			} else {
 				out = translator.generateDot(lhs) + translator.generateDot(lhs.GetSibling())
 			}
@@ -75,13 +72,11 @@ func (translator *Translator) generateDot(ast *syntaxTree.SyntaxTree) string {
 	// startSubgraph(left, right)
 	//  and is literal -> literal
 	if currNode.NodeType == gofelex.LOGICAL {
-		edge := ast.GetChild().GetNode().Literal
-		nodeNum := translator.getNodeNum()
-		next := translator.generateDot(ast.GetChild().GetSibling())
+		if currNode.Literal == "and" {
+			edge := ast.GetChild().GetNode().Literal
+			nodeNum := translator.getNextNode()
+			next := translator.generateDot(ast.GetChild().GetSibling())
 
-		if next == "" {
-			out = translator.createFinalNode(edge, nodeNum)
-		} else {
 			out = translator.createNode(edge, nodeNum) + next
 		}
 	}
@@ -94,7 +89,7 @@ func (translator *Translator) generateDot(ast *syntaxTree.SyntaxTree) string {
 
 		edge := lhs + " " + op + " " + rhs
 
-		out = translator.createFinalNode(edge, translator.getNodeNum())
+		out = translator.createNode(edge, translator.getNextNode())
 	}
 	//  condition combinines literal
 	if currNode.NodeType == gofelex.CONDITION {
@@ -104,11 +99,11 @@ func (translator *Translator) generateDot(ast *syntaxTree.SyntaxTree) string {
 
 		edge := lhs + " " + op + " " + rhs
 
-		out = translator.createFinalNode(edge, translator.getNodeNum())
+		out = translator.createNode(edge, translator.getNextNode())
 	}
 
 	if currNode.NodeType == gofelex.IDENT {
-		nodeNum := translator.getNodeNum()
+		nodeNum := translator.getNextNode()
 		out = translator.createNode(currNode.Literal, nodeNum)
 	}
 
@@ -116,18 +111,13 @@ func (translator *Translator) generateDot(ast *syntaxTree.SyntaxTree) string {
 }
 
 func (translator *Translator) createNode(edge string, nodeNum int) string {
-	var out string
-
-	out = "\t" + strconv.Itoa(nodeNum-1) + " -> " + strconv.Itoa(nodeNum) + " [label = \"" + edge + "\"];\n"
-
-	return out
+	return translator.createNodeEx(edge, nodeNum-1, nodeNum)
 }
 
-func (translator *Translator) createFinalNode(edge string, nodeNum int) string {
+func (translator *Translator) createNodeEx(edge string, startNode int, endNode int) string {
 	var out string
 
-	out = "\tnode [shape = doublecircle];\n"
-	out = out + translator.createNode(edge, nodeNum)
+	out = "\t" + strconv.Itoa(startNode) + " -> " + strconv.Itoa(endNode) + " [label = \"" + edge + "\"];\n"
 
 	return out
 }
@@ -137,20 +127,24 @@ func (translator *Translator) createSubGraph(ast *syntaxTree.SyntaxTree) string 
 	enterEdge := "Call - " + ast.GetNode().Literal
 	exitEdge := "Ret - " + ast.GetNode().Literal
 
-	out = translator.createNode(enterEdge, translator.getNodeNum())
+	out = translator.createNode(enterEdge, translator.getNextNode())
 	out = out + "\tsubgraph cluster_" + strconv.Itoa(translator.getSubgraphNum()) + " {\n\trank = same;\n\tstyle=\"dashed\";\n"
 	out = out + translator.generateDot(ast.GetSibling())
 	out = out + "\t}"
 
-	out = out + translator.createNode(exitEdge, translator.getNodeNum())
+	out = out + translator.createNode(exitEdge, translator.getNextNode())
 
 	return out
 }
 
-func (translator *Translator) getNodeNum() int {
+func (translator *Translator) getNextNode() int {
 	ret := translator.nodeNumber
 	translator.nodeNumber++
 	return ret
+}
+
+func (translator *Translator) getLastNode() int {
+	return translator.nodeNumber - 1
 }
 
 func (translator *Translator) getSubgraphNum() int {
