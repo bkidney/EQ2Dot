@@ -65,19 +65,28 @@ func (translator *Translator) generateDot(ast *syntaxTree.SyntaxTree) string {
 	//  or is parallel linking
 	if currNode.NodeType == gofelex.LOGICAL {
 		if currNode.Literal == "and" {
-			edge := ast.GetChild().GetNode().Literal
-			nodeNum := translator.getNextNode()
-			next := translator.generateDot(ast.GetChild().GetSibling())
+			// edge := ast.GetChild().GetNode().Literal
+			// nodeNum := translator.getNextNode()
+			// next := translator.generateDot(ast.GetChild().GetSibling())
 
-			out = translator.createNode(edge, nodeNum) + next
-		} else {
-			edge := ast.GetChild().GetNode().Literal
-			lastNode := translator.getLastNode()
+			// out = translator.createNode(edge, nodeNum) + next
+			lhs := ast.GetChild()
+			out = translator.generateDot(lhs) + translator.generateDot(lhs.GetSibling())
+		} else { // currNode.Literal == "or"
+			firstNode := translator.getLastNode()
 
-			next := translator.generateDot(ast.GetChild().GetSibling())
-			siblingLastNode := translator.getLastNode()
+			rhsGraph := translator.generateDot(ast.GetChild().GetSibling())
+			rhsLastNode := translator.getLastNode()
 
-			out = translator.createNodeEx(edge, lastNode, siblingLastNode) + next
+			lhsGraph := translator.generateDot(ast.GetChild())
+
+			translator.reuseLastNode()
+			nextNode := translator.getNextNode()
+
+			rhsGraph = strings.Replace(rhsGraph, strconv.Itoa(rhsLastNode), strconv.Itoa(nextNode), 1)
+			lhsGraph = strings.Replace(lhsGraph, strconv.Itoa(rhsLastNode), strconv.Itoa(firstNode), 1)
+
+			out = lhsGraph + rhsGraph
 		}
 	}
 	//  flow combines literals
@@ -144,6 +153,10 @@ func (translator *Translator) getNextNode() int {
 
 func (translator *Translator) getLastNode() int {
 	return translator.nodeNumber - 1
+}
+
+func (translator *Translator) reuseLastNode() {
+	translator.nodeNumber--
 }
 
 func (translator *Translator) getSubgraphNum() int {
