@@ -35,7 +35,17 @@ func TestTranlator_ProduceDot(t *testing.T) {
 		// A simple example using 'or' with simplified identifiers.
 		{
 			s:   `a or {b and c}`,
-			out: "digraph query {\n\tnode [shape = none];\n\t0 [label = \"start\"];\n\tnode [shape = circle];\n\t0 -> 1;\n\t1 -> 3 [label = \"a\"];\n\t1 -> 2 [label = \"b\"];\n\t2 -> 3 [label = \"c\"];\n\t3 [shape = doublecircle];\n}",
+			out: "digraph query {\n\tnode [shape = none];\n\t0 [label = \"start\"];\n\tnode [shape = circle];\n\t0 -> 1;\n\t1 -> 4 [label = \"a\"];\n\t1 -> 2 [label = \"b\"];\n\t2 -> 4 [label = \"c\"];\n\t4 [shape = doublecircle];\n}",
+		},
+		// Another 'or' example swithcing the grouping to the lhs.
+		{
+			s:   `{a and b} or c`,
+			out: "digraph query {\n\tnode [shape = none];\n\t0 [label = \"start\"];\n\tnode [shape = circle];\n\t0 -> 1;\n\t1 -> 3 [label = \"a\"];\n\t3 -> 4 [label = \"b\"];\n\t1 -> 4 [label = \"c\"];\n\t4 [shape = doublecircle];\n}",
+		},
+		// Another 'or' example swithcing the grouping to the lhs.
+		{
+			s:   `a and {b or c} and d`,
+			out: "digraph query {\n\tnode [shape = none];\n\t0 [label = \"start\"];\n\tnode [shape = circle];\n\t0 -> 1;\n\t1 -> 2 [label = \"a\"];\n\t2 -> 4 [label = \"b\"];\n\t2 -> 4 [label = \"c\"];\n\t4 -> 5 [label = \"d\"];\n\t5 [shape = doublecircle];\n}",
 		},
 	}
 
