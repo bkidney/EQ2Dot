@@ -56,16 +56,7 @@ func (translator *Translator) generateDot(ast *syntaxTree.SyntaxTree) string {
 			out = translator.createSubGraph(ast.GetChild())
 		} else {
 			lhs := ast.GetChild()
-
-			if lhs.GetNode().NodeType == gofelex.IDENT {
-				edge := ast.GetChild().GetNode().Literal
-				nodeNum := translator.getNextNode()
-				next := translator.generateDot(ast.GetChild().GetSibling())
-
-				out = translator.createNode(edge, nodeNum) + next
-			} else {
-				out = translator.generateDot(lhs) + translator.generateDot(lhs.GetSibling())
-			}
+			out = translator.generateDot(lhs) + translator.generateDot(lhs.GetSibling())
 		}
 
 	}
