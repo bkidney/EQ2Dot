@@ -41,6 +41,11 @@ and resultData FlowsTo* outData
       `,
 			out: `root ( TEMPORAL ( IDENT TEMPORAL ( IDENT TEMPORAL ( IDENT LOGICAL ( IDENT FLOW ( IDENT IDENT ) ) ) ) ) )`,
 		},
+		// A simple grouping test
+		{
+			s:   `{a and b} or c`,
+			out: `root ( LOGICAL ( LOGICAL ( IDENT IDENT ) IDENT ) )`,
+		},
 		// Errors
 		{
 			s:   `and ?srcIP`,
